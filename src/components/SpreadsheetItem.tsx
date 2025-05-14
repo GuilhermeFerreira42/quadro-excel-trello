@@ -2,6 +2,13 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { BoardItem, Spreadsheet, CellValue } from '@/types';
+import { MoreVertical } from 'lucide-react';
+import { 
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem
+} from '@/components/ui/dropdown-menu';
 
 interface SpreadsheetItemProps {
   boardId: string;
@@ -10,7 +17,7 @@ interface SpreadsheetItemProps {
 }
 
 export const SpreadsheetItem = ({ boardId, item, spreadsheet }: SpreadsheetItemProps) => {
-  const { openModal, data, updateSpreadsheet } = useApp();
+  const { openModal, data, updateSpreadsheet, deleteItem } = useApp();
   const expandirQuadro = data.settings.expandirQuadro;
   
   const [editingCell, setEditingCell] = useState<{ rowId: string; columnId: string } | null>(null);
@@ -86,17 +93,48 @@ export const SpreadsheetItem = ({ boardId, item, spreadsheet }: SpreadsheetItemP
   const hasMoreRows = spreadsheet.rows.length > 3;
   
   return (
-    <div 
-      className="bg-white rounded shadow cursor-pointer hover:shadow-md"
-      onClick={() => {
-        if (!editingCell) {
-          openModal(boardId, item.id, 'planilha');
-        }
-      }}
-    >
+    <div className="bg-white rounded shadow cursor-pointer hover:shadow-md relative group">
+      <div className="absolute top-2 right-2 z-10 opacity-0 group-hover:opacity-100">
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button 
+              className="h-6 w-6 p-0 rounded-full flex items-center justify-center text-gray-500 hover:bg-gray-100"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem 
+              onClick={(e) => {
+                e.stopPropagation();
+                openModal(boardId, item.id, 'planilha');
+              }}
+            >
+              Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem 
+              className="text-red-500"
+              onClick={(e) => {
+                e.stopPropagation();
+                if (confirm("Tem certeza que deseja excluir este item? Esta ação não poderá ser desfeita.")) {
+                  deleteItem(boardId, item.id);
+                }
+              }}
+            >
+              Excluir
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      
       <div 
         className={`overflow-x-auto ${expandirQuadro ? '' : 'max-h-60 overflow-y-auto'}`}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => {
+          if (!editingCell) {
+            openModal(boardId, item.id, 'planilha');
+          }
+        }}
       >
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -135,15 +173,19 @@ export const SpreadsheetItem = ({ boardId, item, spreadsheet }: SpreadsheetItemP
                         onKeyDown={handleKeyDown}
                         autoFocus
                         className="cell-input"
+                        onClick={(e) => e.stopPropagation()}
                       />
                     ) : (
                       <div 
                         className="px-2 py-1 min-h-[28px] hover:bg-gray-50"
-                        onClick={() => handleCellClick(
-                          row.id, 
-                          column.id, 
-                          row.cells[column.id] || ''
-                        )}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCellClick(
+                            row.id, 
+                            column.id, 
+                            row.cells[column.id] || ''
+                          );
+                        }}
                       >
                         {formatCellValue(row.cells[column.id] || '', column.type)}
                       </div>

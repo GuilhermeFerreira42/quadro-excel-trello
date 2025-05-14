@@ -27,6 +27,7 @@ import {
   ChecklistItem,
   Checklist as ChecklistType
 } from '@/types';
+import { Checkbox } from './ui/checkbox';
 
 export const EditModal = () => {
   const { 
@@ -265,15 +266,18 @@ export const EditModal = () => {
             <div className="space-y-2">
               {checklist.items.map(item => (
                 <div key={item.id} className="flex items-center">
-                  <input
-                    type="checkbox"
+                  <Checkbox
+                    id={`item-${item.id}`}
                     checked={item.checked}
-                    onChange={() => handleToggleChecklistItem(checklist.id, item.id)}
-                    className="mr-2 h-4 w-4"
+                    onCheckedChange={() => handleToggleChecklistItem(checklist.id, item.id)}
+                    className="mr-2"
                   />
-                  <span className={item.checked ? 'line-through text-gray-500' : ''}>
+                  <label 
+                    htmlFor={`item-${item.id}`}
+                    className={item.checked ? 'line-through text-gray-500' : ''}
+                  >
                     {item.text}
-                  </span>
+                  </label>
                   <Button
                     variant="ghost"
                     size="sm"

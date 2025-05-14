@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { 
   AppData, 
@@ -111,6 +110,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev,
       boards: updatedBoards
     }));
+    
+    toast.success("Quadro movido com sucesso");
   };
 
   const deleteBoard = (boardId: string) => {
@@ -230,28 +231,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  const deleteItem = (boardId: string, itemId: string) => {
-    setData(prev => ({
-      ...prev,
-      boards: prev.boards.map(board => 
-        board.id === boardId 
-          ? {
-              ...board,
-              items: board.items.filter(item => item.id !== itemId)
-            }
-          : board
-      )
-    }));
-    
-    closeModal();
-    toast.success("Item removido com sucesso");
-  };
-
   const moveItem = (boardId: string, oldIndex: number, newIndex: number) => {
     const board = data.boards.find(b => b.id === boardId);
     if (!board) return;
 
-    const items = [...board.items];
+    const items = [...board.items].sort((a, b) => a.order - b.order);
     const [movedItem] = items.splice(oldIndex, 1);
     items.splice(newIndex, 0, movedItem);
 
@@ -269,6 +253,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : b
       )
     }));
+    
+    toast.success("Item movido com sucesso");
   };
 
   const moveItemBetweenBoards = (sourceBoardId: string, targetBoardId: string, itemId: string) => {
@@ -298,6 +284,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return board;
       })
     }));
+  };
+
+  const deleteItem = (boardId: string, itemId: string) => {
+    setData(prev => ({
+      ...prev,
+      boards: prev.boards.map(board => 
+        board.id === boardId 
+          ? {
+              ...board,
+              items: board.items.filter(item => item.id !== itemId)
+            }
+          : board
+      )
+    }));
+    
+    closeModal();
+    toast.success("Item removido com sucesso");
   };
 
   // Funções de controle de modal
