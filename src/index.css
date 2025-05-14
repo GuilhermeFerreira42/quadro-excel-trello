@@ -32,6 +32,15 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
+    
+    --sidebar-background: 210 100% 10%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 210 100% 10%;
+    --sidebar-accent: 0 0% 100% / 0.1;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.1;
+    --sidebar-ring: 0 0% 100%;
 
     --radius: 0.5rem;
   }
@@ -92,6 +101,8 @@
   flex-direction: column;
   height: auto;
   min-height: 120px;
+  background-color: #ebecf0; /* Trello board color */
+  border-radius: 3px;
 }
 
 .board-content {
@@ -102,7 +113,7 @@
 /* Improve styling for cards and spreadsheets */
 .card-item, .spreadsheet-item {
   background-color: white;
-  border-radius: 4px;
+  border-radius: 3px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 8px;
   margin-bottom: 8px;
@@ -111,4 +122,41 @@
 
 .card-item:hover, .spreadsheet-item:hover {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Board header styling like Trello */
+.board-header {
+  background-color: #026AA7;
+  color: white;
+}
+
+/* Trello-like button styles */
+.trello-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 3px;
+  transition: background-color 0.2s ease;
+}
+
+.trello-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Board title styling */
+.board-title {
+  font-weight: bold;
+  font-size: 14px;
+  padding: 10px;
+  border-radius: 3px;
+  background-color: #0079BF;
+  color: white;
+}
+
+.board-title-input {
+  background-color: white;
+  color: #172b4d;
+  border-radius: 3px;
+  border: 2px solid #0079BF;
+  padding: 8px;
+  font-weight: bold;
 }

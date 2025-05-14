@@ -1,10 +1,25 @@
 
+import { useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Table, FileText } from 'lucide-react';
 
 export const AddItemMenu = () => {
   const { itemMenu, addSpreadsheet, addCard, closeItemMenu } = useApp();
+  const menuRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        closeItemMenu();
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [closeItemMenu]);
   
   if (!itemMenu.isOpen || !itemMenu.boardId || !itemMenu.position) return null;
   
@@ -23,6 +38,7 @@ export const AddItemMenu = () => {
   
   return (
     <div 
+      ref={menuRef}
       className="absolute bg-white shadow-lg rounded-md z-50 w-64 p-2"
       style={{ top: y, left: x }}
     >

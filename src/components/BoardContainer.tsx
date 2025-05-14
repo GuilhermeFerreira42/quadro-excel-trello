@@ -49,13 +49,13 @@ export const BoardContainer = () => {
   return (
     <div 
       ref={containerRef}
-      className="flex-1 flex overflow-x-auto overflow-y-auto p-4 board-scroll bg-gray-50"
+      className="flex-1 flex overflow-x-auto overflow-y-auto p-4 board-scroll bg-[#0079BF]"
     >
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="boards" direction="horizontal" type="BOARD">
           {(provided) => (
             <div 
-              className="flex"
+              className="flex items-start"
               ref={provided.innerRef}
               {...provided.droppableProps}
             >
@@ -92,8 +92,8 @@ export const BoardContainer = () => {
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
-              variant="outline"
-              className="h-12 w-full border-dashed border-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100/80 flex items-center justify-center"
+              variant="secondary"
+              className="h-12 w-full text-[#172B4D] bg-[#ebecf0] hover:bg-[#dfe3e8] flex items-center justify-center"
             >
               <Plus className="h-5 w-5 mr-2" />
               Adicionar Quadro
@@ -116,7 +116,7 @@ export const BoardContainer = () => {
             </div>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleAddBoard}>
+              <AlertDialogAction onClick={handleAddBoard} className="bg-[#5AAC44] hover:bg-[#4a9e38]">
                 Adicionar
               </AlertDialogAction>
             </AlertDialogFooter>
