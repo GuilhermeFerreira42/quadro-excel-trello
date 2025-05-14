@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,20 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				trello: {
+					blue: '#0079BF',
+					darkBlue: '#026AA7',
+					green: '#5AAC44',
+					yellow: '#F2D600',
+					orange: '#FF9F1A',
+					red: '#EB5A46',
+					purple: '#C377E0',
+					pink: '#FF78CB',
+					skyblue: '#00C2E0',
+					limegree: '#61BD4F',
+					black: '#172B4D',
+					board: '#ebecf0',
 				}
 			},
 			borderRadius: {
