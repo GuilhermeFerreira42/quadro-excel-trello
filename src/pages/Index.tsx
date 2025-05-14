@@ -7,7 +7,7 @@ import { AppProvider } from '@/context/AppContext';
 import { useEffect } from 'react';
 
 const Index = () => {
-  // Atualiza o título da página
+  // Update page title
   useEffect(() => {
     document.title = "Calendário - Sua organização flexível";
   }, []);

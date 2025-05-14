@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
-import { Plus, User } from 'lucide-react';
+import { Plus, User, Settings } from 'lucide-react';
 import { UserMenu } from './UserMenu';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,7 +26,7 @@ export const BoardHeader = () => {
   };
 
   return (
-    <header className="bg-trello-darkBlue text-white p-3 flex items-center justify-between">
+    <header className="bg-blue-600 text-white p-3 flex items-center justify-between shadow-md">
       <div className="flex items-center space-x-4">
         <h1 className="text-xl font-bold">Calendário</h1>
         
@@ -36,7 +36,7 @@ export const BoardHeader = () => {
               type="text"
               value={newBoardTitle}
               onChange={(e) => setNewBoardTitle(e.target.value)}
-              className="bg-white/20 text-white placeholder-white/50 rounded py-1 px-2 mr-2 focus:outline-none"
+              className="bg-white/20 text-white placeholder-white/50 rounded py-1 px-2 mr-2 focus:outline-none focus:ring-2 focus:ring-white/50"
               placeholder="Nome do quadro..."
               autoFocus
               onKeyDown={(e) => {
@@ -48,7 +48,7 @@ export const BoardHeader = () => {
               size="sm" 
               variant="secondary" 
               onClick={handleAddBoard}
-              className="text-xs"
+              className="text-xs bg-white/20 hover:bg-white/30 text-white"
             >
               Adicionar
             </Button>
@@ -56,7 +56,7 @@ export const BoardHeader = () => {
               size="sm" 
               variant="ghost" 
               onClick={() => setIsAddingBoard(false)}
-              className="text-xs ml-1"
+              className="text-xs ml-1 text-white/80 hover:text-white hover:bg-white/10"
             >
               Cancelar
             </Button>
@@ -84,7 +84,7 @@ export const BoardHeader = () => {
             <User className="h-5 w-5 text-white" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="w-56">
           <UserMenu />
         </DropdownMenuContent>
       </DropdownMenu>

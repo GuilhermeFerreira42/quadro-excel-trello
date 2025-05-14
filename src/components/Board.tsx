@@ -32,7 +32,7 @@ export const Board = ({ board, index }: BoardProps) => {
   const [title, setTitle] = useState(board.title);
   const titleInputRef = useRef<HTMLInputElement>(null);
   
-  // Ordenar os itens pela ordem
+  // Sort items by order
   const sortedItems = [...board.items].sort((a, b) => a.order - b.order);
   
   const handleTitleClick = () => {
@@ -62,11 +62,11 @@ export const Board = ({ board, index }: BoardProps) => {
   };
   
   return (
-    <div className="flex-shrink-0 w-72 mr-4 bg-trello-board rounded-md shadow flex flex-col h-auto min-h-[120px]">
-      <div className="p-2 flex items-center justify-between">
+    <div className="flex-shrink-0 w-80 mr-4 bg-white rounded-md shadow-md flex flex-col h-auto">
+      <div className="p-3 flex items-center justify-between border-b border-gray-100">
         <div className="flex items-center">
-          <span className="drag-handle cursor-grab mr-2">
-            <GripVertical className="h-4 w-4 text-gray-500" />
+          <span className="drag-handle cursor-grab mr-2 text-gray-400">
+            <GripVertical className="h-4 w-4" />
           </span>
           
           {isEditing ? (
@@ -75,7 +75,7 @@ export const Board = ({ board, index }: BoardProps) => {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="bg-white p-1 text-sm rounded border border-trello-blue focus:outline-none w-full"
+              className="bg-white p-1 text-sm rounded border border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
               onBlur={handleTitleSave}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleTitleSave();
@@ -87,7 +87,7 @@ export const Board = ({ board, index }: BoardProps) => {
             />
           ) : (
             <h3 
-              className="font-semibold text-sm py-1 cursor-pointer"
+              className="font-semibold text-gray-800 py-1 cursor-pointer"
               onClick={handleTitleClick}
             >
               {board.title}
@@ -99,10 +99,10 @@ export const Board = ({ board, index }: BoardProps) => {
           <Button
             variant="ghost" 
             size="sm"
-            className="h-6 w-6 p-0 mr-1"
+            className="h-7 w-7 p-0 mr-1 text-gray-500 hover:bg-gray-100"
             onClick={handleAddClick}
           >
-            <Plus className="h-4 w-4 text-gray-600" />
+            <Plus className="h-4 w-4" />
           </Button>
           
           <AlertDialog>
@@ -110,7 +110,7 @@ export const Board = ({ board, index }: BoardProps) => {
               <Button
                 variant="ghost" 
                 size="sm"
-                className="h-6 w-6 p-0 text-gray-500 hover:text-red-500"
+                className="h-7 w-7 p-0 text-gray-500 hover:bg-gray-100 hover:text-red-500"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -139,7 +139,7 @@ export const Board = ({ board, index }: BoardProps) => {
       <Droppable droppableId={board.id} type="ITEM">
         {(provided) => (
           <div 
-            className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[100px]"
+            className="flex-1 overflow-y-auto p-2 space-y-2 min-h-[120px] max-h-[calc(100vh-200px)]"
             ref={provided.innerRef}
             {...provided.droppableProps}
           >
@@ -180,14 +180,14 @@ export const Board = ({ board, index }: BoardProps) => {
         )}
       </Droppable>
       
-      <div className="p-2 border-t border-gray-200">
+      <div className="p-2 border-t border-gray-100">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-600 hover:bg-gray-200"
+          className="w-full justify-start text-gray-600 hover:bg-gray-100 text-sm"
           onClick={handleAddClick}
         >
           <Plus className="h-4 w-4 mr-2" />
-          Adicionar
+          Adicionar Item
         </Button>
       </div>
     </div>

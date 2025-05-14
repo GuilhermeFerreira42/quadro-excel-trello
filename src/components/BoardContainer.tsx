@@ -49,7 +49,7 @@ export const BoardContainer = () => {
   return (
     <div 
       ref={containerRef}
-      className="flex-1 flex overflow-x-auto overflow-y-auto p-4 board-scroll"
+      className="flex-1 flex overflow-x-auto overflow-y-auto p-4 board-scroll bg-gray-50"
     >
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="boards" direction="horizontal" type="BOARD">
@@ -88,7 +88,7 @@ export const BoardContainer = () => {
         </Droppable>
       </DragDropContext>
       
-      <div className="flex-shrink-0 w-72 h-fit ml-2">
+      <div className="flex-shrink-0 w-80 h-fit ml-2">
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
