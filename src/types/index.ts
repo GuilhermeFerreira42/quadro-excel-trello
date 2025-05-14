@@ -11,7 +11,7 @@ export type CellType =
   | 'peso' 
   | 'personalizado';
 
-export type CellValue = string | number | boolean | Date | null;
+export type CellValue = string | number | boolean | null;
 
 export interface Column {
   id: string;

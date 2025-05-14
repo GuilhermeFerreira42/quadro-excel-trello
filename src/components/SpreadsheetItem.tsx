@@ -18,7 +18,7 @@ export const SpreadsheetItem = ({ boardId, item, spreadsheet }: SpreadsheetItemP
   
   const handleCellClick = (rowId: string, columnId: string, value: CellValue) => {
     setEditingCell({ rowId, columnId });
-    setCellValue(value !== null ? value.toString() : '');
+    setCellValue(value !== null ? String(value) : '');
   };
   
   const handleCellChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -73,9 +73,9 @@ export const SpreadsheetItem = ({ boardId, item, spreadsheet }: SpreadsheetItemP
       case 'peso':
         return `${value} kg`;
       case 'checkbox':
-        return value ? '✓' : '☐';
+        return value === true ? '✓' : '☐';
       default:
-        return value.toString();
+        return String(value);
     }
   };
 
