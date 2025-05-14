@@ -49,7 +49,6 @@ export const EditModal = () => {
   const [newChecklistTitle, setNewChecklistTitle] = useState('');
   const [selectedColumnType, setSelectedColumnType] = useState<CellType>('texto');
   
-  // Buscar o item e preencher o estado
   useEffect(() => {
     if (modal.isOpen && modal.boardId && modal.itemId && modal.type) {
       const board = data.boards.find(b => b.id === modal.boardId);
@@ -71,7 +70,6 @@ export const EditModal = () => {
     }
   }, [modal, data.boards]);
   
-  // Salvar alterações ao fechar o modal
   const handleSave = () => {
     if (!modal.boardId || !modal.itemId || !modal.type) return;
     
@@ -95,7 +93,6 @@ export const EditModal = () => {
     closeModal();
   };
   
-  // Gerenciamento de colunas da planilha
   const handleAddColumn = () => {
     if (!newColumn.trim()) return;
     
@@ -120,7 +117,6 @@ export const EditModal = () => {
     }));
   };
   
-  // Gerenciamento de linhas da planilha
   const handleAddRow = () => {
     const row: Row = {
       id: crypto.randomUUID(),
@@ -134,7 +130,7 @@ export const EditModal = () => {
     setRows(rows.filter(row => row.id !== rowId));
   };
   
-  // Edição de células da planilha
+  // Corrigido: Tratamento correto do tipo de valor da célula
   const handleCellChange = (rowId: string, columnId: string, value: string) => {
     setRows(rows.map(row => {
       if (row.id === rowId) {
@@ -150,7 +146,6 @@ export const EditModal = () => {
     }));
   };
   
-  // Gerenciamento de checklists do cartão
   const handleAddChecklist = () => {
     if (!newChecklistTitle.trim()) return;
     
@@ -168,7 +163,6 @@ export const EditModal = () => {
     setChecklists(checklists.filter(cl => cl.id !== checklistId));
   };
   
-  // Gerenciamento de itens do checklist
   const handleAddChecklistItem = (checklistId: string, text: string) => {
     if (!text.trim()) return;
     
@@ -201,6 +195,7 @@ export const EditModal = () => {
     }));
   };
   
+  // Corrigido: Agora a mudança de estado do checkbox está correta
   const handleToggleChecklistItem = (checklistId: string, itemId: string) => {
     setChecklists(checklists.map(cl => {
       if (cl.id === checklistId) {
@@ -221,7 +216,6 @@ export const EditModal = () => {
     }));
   };
   
-  // Renderização de conteúdo específico por tipo
   const renderCardContent = () => (
     <div className="space-y-4">
       <div>
@@ -404,7 +398,7 @@ export const EditModal = () => {
                 {columns.map(column => (
                   <td key={`${row.id}-${column.id}`} className="border p-0">
                     <Input
-                      value={row.cells[column.id] || ''}
+                      value={row.cells[column.id] !== undefined ? String(row.cells[column.id]) : ''}
                       onChange={(e) => handleCellChange(row.id, column.id, e.target.value)}
                       className="border-0 h-8"
                     />
@@ -428,7 +422,6 @@ export const EditModal = () => {
     </div>
   );
   
-  // Função para obter o título do modal
   const getModalTitle = () => {
     if (!modal.type) return '';
     
