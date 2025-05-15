@@ -1,15 +1,344 @@
-
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quadro Excel Trello</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+<html lang="pt-BR" class="scroll-smooth" style="scroll-behavior:smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Calendário - Trello Clone</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#3b6a2a] font-sans text-white min-h-screen flex flex-col">
+  <header class="flex items-center justify-between bg-[#1b1c21] px-4 h-12 flex-shrink-0">
+    <div class="flex items-center space-x-2">
+      <img
+        src="https://storage.googleapis.com/a1aa/image/cf0b3528-d36d-4534-785e-71b9b9dc5bb1.jpg"
+        alt="Trello logo placeholder, white T on gray background"
+        class="w-6 h-6"
+        width="24"
+        height="24"
+      />
+      <span class="text-white text-sm font-semibold select-none">Calendário</span>
+      <button
+        id="btnCreate"
+        class="ml-2 bg-[#2f80ed] hover:bg-[#1c5ed6] text-white text-xs font-semibold rounded px-2 py-1 relative"
+        type="button"
+        aria-haspopup="true"
+        aria-expanded="false"
+      >
+        Criar
+      </button>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="relative">
+        <input
+          type="search"
+          placeholder="Pesquisar"
+          class="bg-[#1b1c21] border border-[#2f2f33] rounded text-xs text-white placeholder:text-[#6b7280] py-1 pl-3 pr-8 w-40 focus:outline-none focus:ring-1 focus:ring-[#2f80ed]"
+          aria-label="Pesquisar"
+        />
+        <i
+          class="fas fa-search absolute right-2 top-1/2 -translate-y-1/2 text-[#6b7280] text-xs pointer-events-none"
+        ></i>
+      </div>
+      <img
+        id="userAvatar"
+        src="https://storage.googleapis.com/a1aa/image/15eee078-e569-480c-ee32-55d9667fcb68.jpg"
+        alt="User avatar placeholder, white U on gray background"
+        class="w-8 h-8 rounded-full cursor-pointer"
+        width="32"
+        height="32"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-label="Configurações do usuário"
+      />
+    </div>
+  </header>
+
+  <div
+    id="userSettingsMenu"
+    class="hidden absolute right-0 mt-2 w-64 bg-[#1b1c21] border border-[#2f2f33] rounded shadow-lg z-50"
+    role="menu"
+    aria-label="Configurações do usuário"
+  >
+    <div class="p-4 text-xs text-white space-y-3">
+      <label class="flex items-center space-x-2 cursor-pointer select-none">
+        <input
+          type="checkbox"
+          id="expandBoardCheckbox"
+          class="form-checkbox h-4 w-4 text-[#2f80ed] rounded"
+        />
+        <span>Expandir quadro conforme o tamanho da planilha</span>
+      </label>
+    </div>
+  </div>
+
+  <main class="flex flex-1 overflow-hidden relative">
+    <aside
+      id="sidebar"
+      class="bg-[#1b1c21] w-60 flex flex-col flex-shrink-0 overflow-y-auto relative"
+      aria-label="Barra lateral de quadros"
+    >
+      <div
+        class="flex items-center space-x-2 px-3 py-3 border-b border-[#2f2f33] relative"
+        role="banner"
+      >
+        <div
+          class="bg-[#6b7280] text-white font-bold rounded px-2 py-1 text-xs select-none user-initial"
+          aria-hidden="true"
+          style="user-select:none"
+        >
+          G
+        </div>
+      </div>
+      <nav
+        class="flex flex-col px-3 py-2 text-xs text-[#9ca3af] space-y-2"
+        aria-label="Navegação principal"
+      >
+        <a
+          href="#"
+          class="flex items-center space-x-2 hover:text-white"
+          tabindex="0"
+          > <i class="fas fa-columns w-4"></i> <span>Quadros</span> </a
+        >
+        <div
+          id="btnSettings"
+          class="flex items-center space-x-2 cursor-pointer hover:text-white select-none"
+          tabindex="0"
+          role="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          aria-controls="settingsMenu"
+        >
+          <i class="fas fa-cog w-4"></i>
+          <span>Configurações</span>
+          <i class="fas fa-chevron-down ml-auto"></i>
+        </div>
+        <div
+          id="settingsMenu"
+          class="hidden flex flex-col mt-1 ml-6 text-xs space-y-1 text-[#9ca3af]"
+          role="menu"
+          aria-label="Configurações do quadro"
+        >
+          <label class="flex items-center space-x-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              id="settingExpandBoard"
+              class="form-checkbox h-4 w-4 text-[#2f80ed] rounded"
+            />
+            <span>Expandir quadro conforme o tamanho da planilha</span>
+          </label>
+        </div>
+      </nav>
+      <div class="px-3 py-2 text-xs text-[#9ca3af] font-semibold select-none flex items-center justify-between">
+        <span>Seus quadros</span>
+        <button
+          id="addNewBlockBtnSidebar"
+          aria-label="Adicionar novo quadro"
+          title="Adicionar novo quadro"
+          class="text-[#6b7280] hover:text-white text-xs p-1 rounded"
+          type="button"
+        >
+          <i class="fas fa-plus"></i>
+        </button>
+      </div>
+      <div
+        id="boardsList"
+        class="flex flex-col space-y-1 px-3 scrollbar-y"
+        aria-live="polite"
+        aria-relevant="additions removals"
+      >
+        </div>
+    </aside>
+    <button
+      id="sidebarToggleBtn"
+      aria-label="Alternar barra lateral"
+      title="Alternar barra lateral"
+      type="button"
+    >
+      <i class="fas fa-chevron-left"></i>
+    </button>
+
+    <section
+      class="flex-1 flex flex-col overflow-auto"
+      aria-label="Área principal de quadros"
+    >
+      <header
+        id="boardTitle"
+        class="bg-[#2f4a11] px-4 py-2 font-semibold text-sm select-none text-center"
+        aria-live="polite"
+      >
+        Selecione ou crie um quadro
+      </header>
+      <div
+        id="boardContent"
+        class="flex space-x-4 p-4 overflow-x-auto scrollbar-x"
+        tabindex="0"
+        aria-label="Conteúdo do quadro"
+      >
+        </div>
+    </section>
+  </main>
+
+  <div
+    id="createMenu"
+    class="hidden absolute bg-[#1b1c21] border border-[#2f2f33] rounded shadow-lg mt-1 text-xs text-white w-48 z-50"
+    role="menu"
+    aria-label="Menu criar"
+  >
+    <button
+      id="addBoardBtn"
+      class="w-full text-left px-4 py-2 hover:bg-[#2f2f33] flex items-center space-x-2"
+      type="button"
+    >
+      <i class="fas fa-columns"></i>
+      <span>Adicionar novo quadro</span>
+    </button>
+    <button
+      id="addCardBtn"
+      class="w-full text-left px-4 py-2 hover:bg-[#2f2f33] flex items-center space-x-2"
+      type="button"
+    >
+      <i class="fas fa-sticky-note"></i>
+      <span>Adicionar cartão simples</span>
+    </button>
+  </div>
+
+  <div
+    id="modal"
+    class="hidden fixed inset-0 flex items-center justify-center modal-bg z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="modalTitle"
+  >
+    <div
+      class="bg-[#1b1c21] rounded-md max-w-4xl w-full max-h-[90vh] overflow-auto p-6 relative"
+    >
+      <header class="flex justify-between items-center mb-4">
+        <h2
+          id="modalTitle"
+          class="text-white font-semibold text-lg select-none"
+        >
+          Editar
+        </h2>
+        <div class="flex items-center space-x-2">
+          <button
+            id="btnMaximize"
+            class="text-white hover:text-[#2f80ed]"
+            title="Maximizar"
+            type="button"
+            aria-label="Maximizar modal"
+          >
+            <i class="fas fa-expand"></i>
+          </button>
+          <button
+            id="btnRestore"
+            class="text-white hover:text-[#2f80ed] hidden"
+            title="Restaurar"
+            type="button"
+            aria-label="Restaurar modal"
+          >
+            <i class="fas fa-compress"></i>
+          </button>
+          <button
+            id="btnCloseModal"
+            class="text-white hover:text-red-600"
+            title="Fechar"
+            type="button"
+            aria-label="Fechar modal"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </header>
+      <div id="modalContent" class="text-white text-sm overflow-auto max-h-[70vh]">
+        </div>
+      <footer class="mt-4 flex justify-end space-x-3">
+        <button
+          id="btnDelete"
+          class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-semibold"
+          type="button"
+        >
+          🗑️ Excluir
+        </button>
+        <button
+          id="btnArchive"
+          class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-xs font-semibold"
+          type="button"
+        >
+          📦 Arquivar
+        </button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal de Edição Avançada de Planilha -->
+  <div id="modalPlanilhaEdicaoAvancada" class="hidden fixed inset-0 flex items-center justify-center modal-bg z-50" role="dialog" aria-modal="true" aria-labelledby="modalPlanilhaAvancadaTitle">
+    <div class="bg-[#1b1c21] rounded-md max-w-4xl w-full max-h-[90vh] overflow-auto p-6 relative">
+      <header class="flex justify-between items-center mb-4">
+        <h2 id="modalPlanilhaAvancadaTitle" class="text-white font-semibold text-lg select-none">Editar Planilha</h2>
+        <div class="flex items-center space-x-2">
+          <button id="btnCloseModalPlanilhaAvancada" class="text-white hover:text-red-600" title="Fechar" type="button" aria-label="Fechar modal de edição de planilha">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </header>      <form id="formPlanilhaAvancada">
+        <div class="mb-4">
+          <label for="nomePlanilhaAvancada" class="block text-xs font-semibold mb-1">Nome da Planilha</label>
+          <input 
+            type="text" 
+            id="nomePlanilhaAvancada" 
+            class="w-full rounded bg-[#2f4a11] border border-[#2f80ed] px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]"
+            required
+          >
+        </div>
+        <div class="table-wrapper sheet-table-wrapper mt-2 mb-4 max-h-[50vh] overflow-auto">
+          <table id="tabelaPlanilhaAvancada" class="sheet-table">
+            <thead id="theadColunasAvancada">
+              <!-- Colunas geradas dinamicamente -->
+            </thead>
+            <tbody id="tbodyLinhasAvancada">
+              <!-- Linhas geradas dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 mb-4 flex flex-wrap justify-start items-center gap-3">
+          <button type="button" id="btnAdicionarColunaPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] text-white text-xs font-semibold rounded px-3 py-1.5">
+            <i class="fas fa-plus mr-1"></i>
+            Adicionar Coluna
+          </button>
+          <button type="button" id="btnAdicionarLinhaPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] text-white text-xs font-semibold rounded px-3 py-1.5">
+            <i class="fas fa-plus mr-1"></i>
+            Adicionar Linha
+          </button>
+          <button type="button" id="btnRemoverLinhasSelecionadasPlanilhaAvancada" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded px-3 py-1.5" disabled>
+            <i class="fas fa-trash-alt mr-1"></i>
+            Remover Linhas Selecionadas
+          </button>
+        </div>
+
+        <footer class="mt-6 flex justify-end items-center space-x-3">
+          <button type="button" id="btnExcluirPlanilhaAvancada" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-xs font-semibold">
+            🗑️ Excluir Planilha
+          </button>
+          <button type="button" id="btnArquivarPlanilhaAvancada" class="bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded text-xs font-semibold">
+            📦 Arquivar Planilha
+          </button>
+          <div class="flex-grow"></div>
+          <button type="button" id="btnCancelarPlanilhaAvancada" class="bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded text-xs font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSalvarPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] px-3 py-1.5 rounded text-xs font-semibold">
+            Salvar Alterações
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
