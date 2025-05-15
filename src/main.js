@@ -1,7 +1,11 @@
+
 import { elements } from './utils/dom.js';
 import { generateId } from './utils/helpers.js';
 import * as store from './store/state.js';
 import * as storage from './services/storage.js';
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
 
 // Carregar dados salvos
 const savedBoards = storage.loadData('boards');
@@ -29,5 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     modalModule.init();
     sheetModule.init();
     menuModule.init();
+  }).catch(error => {
+    console.error('Erro ao inicializar componentes:', error);
   });
 });
