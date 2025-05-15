@@ -37,19 +37,19 @@ export const Block = ({ boardId, block }: BlockProps) => {
     setIsBlockMenuOpen(false);
   };
 
-  // Calculate if any sheet items need expansion
+  // Calcular se há planilhas no bloco que podem ser expandidas
   const hasExpandableSheets = block.items.some(item => item.type === 'sheet');
 
   return (
     <div 
       ref={blockRef}
       className={`
-        bg-gray-900 rounded-md shadow-md p-3 min-w-[280px] flex flex-col
-        ${data.expandSheetBlock && hasExpandableSheets ? 'max-w-none' : 'max-w-[280px]'}
+        block-container rounded-md shadow-md p-3 flex flex-col
+        ${data.expandSheetBlock && hasExpandableSheets ? 'max-w-none w-auto' : 'max-w-[280px] w-[280px]'}
         ${data.expandSheetBlock && hasExpandableSheets ? 'overflow-visible' : 'overflow-hidden'}
       `}
     >
-      <div className="flex items-center justify-between mb-2">
+      <div className="flex items-center justify-between mb-2 board-header px-2 py-1 rounded">
         <h3 className="font-semibold text-white text-sm">{block.name}</h3>
         <div className="flex space-x-1">
           <Button
@@ -79,7 +79,7 @@ export const Block = ({ boardId, block }: BlockProps) => {
         </div>
       </div>
 
-      {/* Items container - adjust max-height based on expandSheetBlock setting */}
+      {/* Container dos itens - ajusta a altura máxima com base na configuração expandSheetBlock */}
       <div 
         className={`
           space-y-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700

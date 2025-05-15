@@ -92,7 +92,7 @@
 
 /* Color differentiation for blocks, sheets and cards */
 .block-container {
-  @apply bg-gray-900;
+  @apply bg-gray-900 border border-gray-800;
 }
 
 .sheet-container {
@@ -128,3 +128,4 @@
 .sidebar {
   @apply bg-gray-900 border-r border-gray-700;
 }
+

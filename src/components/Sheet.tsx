@@ -26,13 +26,13 @@ export const Sheet = ({ boardId, blockId, item, expandSheetBlock }: SheetProps) 
   
   useEffect(() => {
     if (sheetRef.current && tableContainerRef.current) {
-      // If expandSheetBlock is true, don't set any max width/height on the table container
+      // Se expandSheetBlock for true, não define nenhuma largura/altura máxima no contêiner da tabela
       if (expandSheetBlock) {
         tableContainerRef.current.style.maxWidth = 'none';
         tableContainerRef.current.style.maxHeight = 'none';
         tableContainerRef.current.style.overflow = 'visible';
       } else {
-        // If expandSheetBlock is false, restrict the size
+        // Se expandSheetBlock for false, restringe o tamanho
         tableContainerRef.current.style.maxWidth = '100%';
         tableContainerRef.current.style.maxHeight = '200px';
         tableContainerRef.current.style.overflow = 'auto';
@@ -71,7 +71,7 @@ export const Sheet = ({ boardId, blockId, item, expandSheetBlock }: SheetProps) 
   return (
     <div 
       ref={sheetRef} 
-      className={`bg-gray-800 rounded border border-gray-700 p-2 ${expandSheetBlock ? 'w-auto' : 'w-full'}`}
+      className={`sheet-container rounded p-2 ${expandSheetBlock ? 'w-auto' : 'w-full'}`}
     >
       <div className="flex items-center justify-between mb-2">
         <h4 className="font-medium text-sm text-white truncate">{item.name}</h4>
@@ -103,9 +103,9 @@ export const Sheet = ({ boardId, blockId, item, expandSheetBlock }: SheetProps) 
           rounded
         `}
       >
-        <table className="min-w-full border-collapse text-xs">
+        <table className="min-w-full border-collapse text-xs sheet-table">
           <thead>
-            <tr className="bg-green-800/80">
+            <tr>
               {sheetContent.columns.map((col) => (
                 <th key={col.id} className="px-2 py-1 text-left font-medium text-white border border-gray-700">
                   {col.name}
@@ -115,7 +115,7 @@ export const Sheet = ({ boardId, blockId, item, expandSheetBlock }: SheetProps) 
           </thead>
           <tbody>
             {sheetContent.rows.map((row, rowIndex) => (
-              <tr key={rowIndex} className="even:bg-gray-800/50 odd:bg-gray-700/30 hover:bg-gray-700/70">
+              <tr key={rowIndex}>
                 {row.map((cell, cellIndex) => {
                   const columnType = sheetContent.columns[cellIndex]?.type || 'text';
                   return (

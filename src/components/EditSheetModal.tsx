@@ -133,6 +133,7 @@ export const EditSheetModal = ({ boardId, blockId, item, onClose, initialIsMaxim
               size="icon" 
               className="text-gray-400 hover:text-white"
               onClick={toggleMaximize}
+              title={isMaximized ? "Restaurar" : "Maximizar"}
             >
               {isMaximized ? <Minimize size={20} /> : <Maximize size={20} />}
             </Button>
@@ -172,7 +173,7 @@ export const EditSheetModal = ({ boardId, blockId, item, onClose, initialIsMaxim
             </div>
             
             <div className="border border-gray-700 rounded overflow-auto">
-              <table className="min-w-full border-collapse">
+              <table className="min-w-full border-collapse sheet-table">
                 <thead>
                   <tr className="bg-green-900/70">
                     {columns.map((column, columnIndex) => (
