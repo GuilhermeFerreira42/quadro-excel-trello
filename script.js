@@ -22,6 +22,24 @@ const settingExpandBoardSidebar = document.getElementById("settingExpandBoard");
 const sidebar = document.getElementById("sidebar");
 const sidebarToggleBtn = document.getElementById("sidebarToggleBtn");
 
+// Elementos do novo modal de edição avançada de planilhas
+const modalPlanilhaEdicaoAvancada = document.getElementById("modalPlanilhaEdicaoAvancada");
+const btnCloseModalPlanilhaAvancada = document.getElementById("btnCloseModalPlanilhaAvancada");
+const formPlanilhaAvancada = document.getElementById("formPlanilhaAvancada");
+const btnAdicionarColunaPlanilhaAvancada = document.getElementById("btnAdicionarColunaPlanilhaAvancada");
+const btnAdicionarLinhaPlanilhaAvancada = document.getElementById("btnAdicionarLinhaPlanilhaAvancada");
+const btnRemoverLinhasSelecionadasPlanilhaAvancada = document.getElementById("btnRemoverLinhasSelecionadasPlanilhaAvancada");
+const btnExcluirPlanilhaAvancada = document.getElementById("btnExcluirPlanilhaAvancada");
+const btnArquivarPlanilhaAvancada = document.getElementById("btnArquivarPlanilhaAvancada");
+const btnCancelarPlanilhaAvancada = document.getElementById("btnCancelarPlanilhaAvancada");
+const btnSalvarPlanilhaAvancada = document.getElementById("btnSalvarPlanilhaAvancada");
+const theadColunasAvancada = document.getElementById("theadColunasAvancada");
+const tbodyLinhasAvancada = document.getElementById("tbodyLinhasAvancada");
+
+let planilhaEditando = null;
+let blockEditando = null;
+let boardEditando = null;
+
 // Função utilitária para gerar IDs únicos
 function generateId() {
   return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
@@ -174,10 +192,33 @@ function createCardElement(card, block, board) {
 
   const header = document.createElement("div");
   header.className = "flex justify-between items-start";
-
   const titleSpan = document.createElement("span");
   titleSpan.className = "font-semibold text-xs text-white break-words flex-1";
-  titleSpan.textContent = card.title;
+  
+  // Se for um cartão novo, criar input para edição direta
+  if (card.isNew) {
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.value = card.title;
+    titleInput.className = "w-full rounded bg-[#2f4a11] border border-[#2f80ed] px-2 py-1 text-white text-xs focus:outline-none focus:ring-1 focus:ring-[#2f80ed]";
+    titleInput.addEventListener("blur", () => {
+      if (titleInput.value.trim()) {
+        card.title = titleInput.value.trim();
+        card.isNew = false;
+        renderBoardContent();
+      }
+    });
+    titleInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        titleInput.blur();
+      }
+    });
+    titleSpan.appendChild(titleInput);
+    // Focar o input automaticamente
+    setTimeout(() => titleInput.focus(), 0);
+  } else {
+    titleSpan.textContent = card.title;
+  }
 
   // Botão de menu
   const menuBtn = document.createElement("button");
@@ -194,10 +235,9 @@ function createCardElement(card, block, board) {
   menuDropdown.className = "block-dropdown-menu";
   menuDropdown.setAttribute("role", "menu");
   menuDropdown.setAttribute("aria-label", `Opções do cartão simples ${card.title}`);
-
   const editOption = document.createElement("button");
   editOption.type = "button";
-  editOption.textContent = "Editar";
+  editOption.textContent = "Abrir cartão";
   editOption.addEventListener("click", () => {
     closeAllMenus();
     openModal("card", card, block, board);
@@ -275,7 +315,7 @@ function createSheetElement(sheet, block, board) {
   menuBtn.setAttribute("aria-haspopup", "true");
   menuBtn.setAttribute("aria-expanded", "false");
   menuBtn.setAttribute("aria-label", `Menu da planilha ${sheet.name || "Sem nome"}`);
-  menuBtn.innerHTML = `<i class="fas fa-ellipsis-h"></i>`;
+  menuBtn.innerHTML = "<i class=\"fas fa-ellipsis-h\"></i>";
   menuBtn.style.position = "relative";
 
   // Menu dropdown para opções da planilha
@@ -283,13 +323,12 @@ function createSheetElement(sheet, block, board) {
   menuDropdown.className = "block-dropdown-menu";
   menuDropdown.setAttribute("role", "menu");
   menuDropdown.setAttribute("aria-label", `Opções da planilha ${sheet.name || "Sem nome"}`);
-
   const editOption = document.createElement("button");
   editOption.type = "button";
-  editOption.textContent = "Editar";
+  editOption.textContent = "Abrir planilha";
   editOption.addEventListener("click", () => {
     closeAllMenus();
-    openModal("sheet", sheet, block, board);
+    openModalPlanilhaAvancada(sheet, block, board);
   });
 
   const archiveOption = document.createElement("button");
@@ -304,11 +343,12 @@ function createSheetElement(sheet, block, board) {
   deleteOption.type = "button";
   deleteOption.textContent = "Excluir";
   deleteOption.addEventListener("click", () => {
-    const idx = block.items.findIndex(i => i.id === sheet.id);
-    if (idx > -1) {
-      block.items.splice(idx, 1);
-      renderBoardContent();
-      closeModal();
+    if (confirm("Tem certeza que deseja excluir esta planilha? Essa ação não pode ser desfeita.")) {
+      const idx = block.items.findIndex(i => i.id === sheet.id);
+      if (idx > -1) {
+        block.items.splice(idx, 1);
+        renderBoardContent();
+      }
     }
   });
 
@@ -332,13 +372,6 @@ function createSheetElement(sheet, block, board) {
   header.appendChild(titleSpan);
   header.appendChild(menuBtn);
   sheetEl.appendChild(header);
-
-  // Clique na planilha abre modal de edição (exceto no botão de menu)
-  sheetEl.addEventListener("click", (e) => {
-    if (e.target === menuBtn || menuBtn.contains(e.target)) return;
-    openModal("sheet", sheet, block, board);
-  });
-
   // Renderiza tabela inline
   if (sheet.columns && sheet.data) {
     const tableWrapper = document.createElement("div");
@@ -358,19 +391,58 @@ function createSheetElement(sheet, block, board) {
     thead.appendChild(trHead);
     table.appendChild(thead);
 
-    // Corpo da tabela
+    // Corpo da tabela com células editáveis
     const tbody = document.createElement("tbody");
     sheet.data.forEach((row, rowIndex) => {
       const tr = document.createElement("tr");
-      sheet.columns.forEach((col, colIndex) => {
+      row.forEach((cell, colIndex) => {
         const td = document.createElement("td");
         td.setAttribute("contenteditable", "true");
         td.setAttribute("data-row", rowIndex);
         td.setAttribute("data-col", colIndex);
-        td.textContent = row[colIndex] ?? "";
-        td.addEventListener("input", (e) => {
-          sheet.data[rowIndex][colIndex] = e.target.textContent;
-        });
+
+        // Define o tipo de entrada baseado no tipo da coluna
+        const coluna = sheet.columns[colIndex];
+        if (coluna.type === "checkbox") {
+          td.setAttribute("contenteditable", "false");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = cell === true || cell === "true";
+          checkbox.className = "cursor-pointer";
+          checkbox.addEventListener("change", () => {
+            sheet.data[rowIndex][colIndex] = checkbox.checked;
+          });
+          td.appendChild(checkbox);
+        } else {
+          td.textContent = cell ?? "";
+          td.addEventListener("input", () => {
+            let valor = td.textContent;
+            
+            // Converte o valor baseado no tipo da coluna
+            if (coluna.type === "numero" || coluna.type === "peso" || coluna.type === "porcentagem") {
+              valor = valor === "" ? "" : Number(valor);
+            } else if (coluna.type === "moeda") {
+              valor = valor === "" ? "" : Number(valor.replace(/[^0-9.-]+/g, ""));
+            }
+            
+            sheet.data[rowIndex][colIndex] = valor;
+          });
+          
+          // Formatação específica para tipos especiais
+          td.addEventListener("blur", () => {
+            let valor = td.textContent;
+            if (coluna.type === "moeda" && valor) {
+              td.textContent = Number(valor).toLocaleString("pt-BR", {
+                style: "currency",
+                currency: "BRL"
+              });
+            } else if (coluna.type === "porcentagem" && valor) {
+              td.textContent = Number(valor) + "%";
+            } else if (coluna.type === "peso" && valor) {
+              td.textContent = Number(valor) + " kg";
+            }
+          });
+        }
         tr.appendChild(td);
       });
       tbody.appendChild(tr);
@@ -503,9 +575,7 @@ function closeAllMenus() {
 function openModal(type, item, block, board) {
   selectedItem = { type, item, block, board };
   modal.classList.remove("hidden");
-  
-  const title = type === "card" ? item.title : item.name;
-  document.getElementById("modalTitle").textContent = title;
+  document.getElementById("modalTitle").textContent = type === "card" ? item.title : "Editar";
   renderModalContent(type, item, block, board);
 }
 
@@ -514,10 +584,294 @@ function renderModalContent(type, item, block, board) {
   modalContent.innerHTML = "";
   if (type === "card") {
     renderCardModal(item);
-  } else if (type === "sheet") {
-    renderSheetModal(item);
   }
 }
+
+// Função para abrir modal de edição avançada de planilha
+function openModalPlanilhaAvancada(sheet, block, board) {  planilhaEditando = structuredClone(sheet); // Clona para permitir cancelar edição
+  blockEditando = block;
+  boardEditando = board;
+  modalPlanilhaEdicaoAvancada.classList.remove("hidden");
+  document.getElementById("nomePlanilhaAvancada").value = planilhaEditando.name || "";
+  renderizarPlanilhaAvancada();
+}
+
+// Função para fechar modal de edição avançada de planilha
+function closeModalPlanilhaAvancada() {
+  modalPlanilhaEdicaoAvancada.classList.add("hidden");
+  planilhaEditando = null;
+  blockEditando = null;
+  boardEditando = null;
+}
+
+// Função para renderizar planilha no modal avançado
+function renderizarPlanilhaAvancada() {
+  if (!planilhaEditando) return;
+
+  // Renderiza cabeçalho com colunas editáveis
+  theadColunasAvancada.innerHTML = "";
+  const trHead = document.createElement("tr");
+  
+  planilhaEditando.columns.forEach((col, index) => {
+    const th = document.createElement("th");
+    th.className = "relative";
+
+    const divCol = document.createElement("div");
+    divCol.className = "flex flex-col space-y-1 p-2";
+
+    // Input para nome da coluna
+    const inputNome = document.createElement("input");
+    inputNome.type = "text";
+    inputNome.value = col.name;
+    inputNome.className = "w-full bg-transparent border border-[#2f80ed] rounded px-2 py-1 text-white text-sm";
+    inputNome.placeholder = "Nome da coluna";
+    inputNome.addEventListener("input", (e) => {
+      planilhaEditando.columns[index].name = e.target.value;
+    });
+
+    // Select para tipo da coluna
+    const selectTipo = document.createElement("select");
+    selectTipo.className = "w-full bg-transparent border border-[#2f80ed] rounded px-2 py-1 text-white text-sm";
+    const tipos = [
+      { value: "texto", label: "Texto" },
+      { value: "numero", label: "Número" },
+      { value: "moeda", label: "Moeda (R$)" },
+      { value: "data", label: "Data" },
+      { value: "hora", label: "Hora" },
+      { value: "tempo", label: "Tempo/Duração" },
+      { value: "porcentagem", label: "Porcentagem" },
+      { value: "checkbox", label: "Checkbox" },
+      { value: "peso", label: "Peso (kg)" }
+    ];
+
+    tipos.forEach(tipo => {
+      const option = document.createElement("option");
+      option.value = tipo.value;
+      option.textContent = tipo.label;
+      if (col.type === tipo.value) option.selected = true;
+      selectTipo.appendChild(option);
+    });
+
+    selectTipo.addEventListener("change", (e) => {
+      planilhaEditando.columns[index].type = e.target.value;
+    });
+
+    // Botão remover coluna
+    const btnRemover = document.createElement("button");
+    btnRemover.type = "button";
+    btnRemover.className = "absolute top-1 right-1 text-red-500 hover:text-red-700";
+    btnRemover.innerHTML = '<i class="fas fa-times"></i>';
+    btnRemover.addEventListener("click", () => {
+      if (planilhaEditando.columns.length <= 1) {
+        alert("A planilha deve ter pelo menos uma coluna");
+        return;
+      }
+      planilhaEditando.columns.splice(index, 1);
+      planilhaEditando.data.forEach(row => {
+        row.splice(index, 1);
+      });
+      renderizarPlanilhaAvancada();
+    });
+
+    divCol.appendChild(inputNome);
+    divCol.appendChild(selectTipo);
+    th.appendChild(divCol);
+    th.appendChild(btnRemover);
+    trHead.appendChild(th);
+  });
+
+  // Checkbox header para selecionar todas as linhas
+  const thCheckbox = document.createElement("th");
+  thCheckbox.className = "w-10 p-2";
+  const checkboxAll = document.createElement("input");
+  checkboxAll.type = "checkbox";
+  checkboxAll.className = "cursor-pointer";
+  checkboxAll.addEventListener("change", () => {
+    const checkboxes = tbodyLinhasAvancada.querySelectorAll("input[type=checkbox]");
+    checkboxes.forEach(cb => cb.checked = checkboxAll.checked);
+    atualizarBotaoRemoverLinhas();
+  });
+  thCheckbox.appendChild(checkboxAll);
+  trHead.appendChild(thCheckbox);
+
+  theadColunasAvancada.appendChild(trHead);
+
+  // Renderiza corpo da tabela
+  tbodyLinhasAvancada.innerHTML = "";
+  planilhaEditando.data.forEach((row, rowIndex) => {
+    const tr = document.createElement("tr");
+    
+    row.forEach((cell, colIndex) => {
+      const td = document.createElement("td");
+      td.className = "p-2";
+      
+      const coluna = planilhaEditando.columns[colIndex];
+      let input;
+
+      switch (coluna.type) {
+        case "checkbox":
+          input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = cell;
+          input.className = "cursor-pointer";
+          break;
+        case "numero":
+        case "peso":
+          input = document.createElement("input");
+          input.type = "number";
+          input.step = "any";
+          input.value = cell || "";
+          break;
+        case "data":
+          input = document.createElement("input");
+          input.type = "date";
+          input.value = cell || "";
+          break;
+        case "hora":
+          input = document.createElement("input");
+          input.type = "time";
+          input.value = cell || "";
+          break;
+        case "moeda":
+          input = document.createElement("input");
+          input.type = "number";
+          input.step = "0.01";
+          input.min = "0";
+          input.value = cell || "";
+          break;
+        case "porcentagem":
+          input = document.createElement("input");
+          input.type = "number";
+          input.min = "0";
+          input.max = "100";
+          input.value = cell || "";
+          break;
+        default:
+          input = document.createElement("input");
+          input.type = "text";
+          input.value = cell || "";
+      }
+
+      input.className = "w-full bg-transparent border border-[#2f2f33] rounded px-2 py-1 text-white text-sm";
+      input.addEventListener("input", (e) => {
+        let valor = e.target.value;
+        if (coluna.type === "checkbox") valor = e.target.checked;
+        else if (coluna.type === "numero" || coluna.type === "moeda" || coluna.type === "peso" || coluna.type === "porcentagem") {
+          valor = valor === "" ? "" : Number(valor);
+        }
+        planilhaEditando.data[rowIndex][colIndex] = valor;
+      });
+
+      td.appendChild(input);
+      tr.appendChild(td);
+    });
+
+    // Checkbox para seleção da linha
+    const tdCheckbox = document.createElement("td");
+    tdCheckbox.className = "p-2";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "cursor-pointer";
+    checkbox.addEventListener("change", atualizarBotaoRemoverLinhas);
+    tdCheckbox.appendChild(checkbox);
+    tr.appendChild(tdCheckbox);
+
+    tbodyLinhasAvancada.appendChild(tr);
+  });
+
+  atualizarBotaoRemoverLinhas();
+}
+
+// Função para atualizar estado do botão de remover linhas selecionadas
+function atualizarBotaoRemoverLinhas() {
+  const checkboxes = Array.from(tbodyLinhasAvancada.querySelectorAll("input[type=checkbox]"));
+  const temLinhasSelecionadas = checkboxes.some(cb => cb.checked);
+  btnRemoverLinhasSelecionadasPlanilhaAvancada.disabled = !temLinhasSelecionadas;
+}
+
+// Event listeners para o modal de edição avançada de planilha
+btnCloseModalPlanilhaAvancada.addEventListener("click", () => {
+  if (confirm("Tem certeza que deseja fechar? Alterações não salvas serão perdidas.")) {
+    closeModalPlanilhaAvancada();
+  }
+});
+
+btnCancelarPlanilhaAvancada.addEventListener("click", () => {
+  if (confirm("Tem certeza que deseja cancelar? Alterações não salvas serão perdidas.")) {
+    closeModalPlanilhaAvancada();
+  }
+});
+
+btnAdicionarColunaPlanilhaAvancada.addEventListener("click", () => {
+  const novaColuna = {
+    name: `Coluna ${planilhaEditando.columns.length + 1}`,
+    type: "texto"
+  };
+  planilhaEditando.columns.push(novaColuna);
+  planilhaEditando.data.forEach(row => {
+    row.push("");
+  });
+  renderizarPlanilhaAvancada();
+});
+
+btnAdicionarLinhaPlanilhaAvancada.addEventListener("click", () => {
+  const novaLinha = planilhaEditando.columns.map(() => "");
+  planilhaEditando.data.push(novaLinha);
+  renderizarPlanilhaAvancada();
+});
+
+btnRemoverLinhasSelecionadasPlanilhaAvancada.addEventListener("click", () => {
+  const checkboxes = Array.from(tbodyLinhasAvancada.querySelectorAll("input[type=checkbox]"));
+  const linhasParaRemover = [];
+  checkboxes.forEach((cb, index) => {
+    if (cb.checked) linhasParaRemover.push(index);
+  });
+
+  // Remove do último para o primeiro para não afetar os índices
+  for (let i = linhasParaRemover.length - 1; i >= 0; i--) {
+    planilhaEditando.data.splice(linhasParaRemover[i], 1);
+  }
+
+  renderizarPlanilhaAvancada();
+});
+
+btnExcluirPlanilhaAvancada.addEventListener("click", () => {
+  if (confirm("Tem certeza que deseja excluir esta planilha? Esta ação não pode ser desfeita.")) {
+    const idx = blockEditando.items.findIndex(i => i.id === planilhaEditando.id);
+    if (idx > -1) {
+      blockEditando.items.splice(idx, 1);
+      renderBoardContent();
+      closeModalPlanilhaAvancada();
+    }
+  }
+});
+
+btnArquivarPlanilhaAvancada.addEventListener("click", () => {
+  if (confirm("Tem certeza que deseja arquivar esta planilha?")) {
+    const idx = blockEditando.items.findIndex(i => i.id === planilhaEditando.id);
+    if (idx > -1) {
+      blockEditando.items[idx].archived = true;
+      renderBoardContent();
+      closeModalPlanilhaAvancada();
+    }
+  }
+});
+
+formPlanilhaAvancada.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const novoNome = document.getElementById("nomePlanilhaAvancada").value.trim();
+  if (!novoNome) {
+    alert("O nome da planilha é obrigatório");
+    return;
+  }
+  planilhaEditando.name = novoNome;
+  const idx = blockEditando.items.findIndex(i => i.id === planilhaEditando.id);
+  if (idx > -1) {
+    blockEditando.items[idx] = planilhaEditando;
+    renderBoardContent();
+    closeModalPlanilhaAvancada();
+  }
+});
 
 // Função para renderizar modal de cartão
 function renderCardModal(card) {
@@ -534,7 +888,6 @@ function renderCardModal(card) {
   titleInput.className = "w-full rounded bg-[#2f4a11] border border-[#2f80ed] px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]";
   titleInput.addEventListener("input", (e) => {
     card.title = e.target.value;
-    renderBoardsList();
     renderBoardContent();
   });
 
@@ -600,7 +953,7 @@ function renderCardModal(card) {
   const addChecklistBtn = document.createElement("button");
   addChecklistBtn.type = "button";
   addChecklistBtn.className = "mt-1 bg-[#6b7280]/40 hover:bg-[#6b7280]/60 rounded px-2 py-1 text-xs font-semibold flex items-center space-x-1";
-  addChecklistBtn.innerHTML = `<i class="fas fa-plus"></i><span>Adicionar item</span>`;
+  addChecklistBtn.innerHTML = '<i class="fas fa-plus"></i><span>Adicionar item</span>';
   addChecklistBtn.addEventListener("click", () => {
     card.checklist.push({ text: "", checked: false });
     renderChecklist();
@@ -613,155 +966,6 @@ function renderCardModal(card) {
   container.appendChild(checklistLabel);
   container.appendChild(checklistContainer);
   container.appendChild(addChecklistBtn);
-
-  modalContent.appendChild(container);
-}
-
-// Função para renderizar modal de planilha
-function renderSheetModal(sheet) {
-  const container = document.createElement("div");
-  container.className = "space-y-4";
-
-  // Input do nome da planilha
-  const nameLabel = document.createElement("label");
-  nameLabel.className = "block text-xs font-semibold mb-1";
-  nameLabel.textContent = "Nome da planilha";
-  const nameInput = document.createElement("input");
-  nameInput.type = "text";
-  nameInput.value = sheet.name || "";
-  nameInput.className = "w-full rounded bg-[#2f4a11] border border-[#2f80ed] px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]";
-  nameInput.addEventListener("input", (e) => {
-    sheet.name = e.target.value;
-    renderBoardContent();
-  });
-
-  // Gerenciamento de colunas
-  const columnsLabel = document.createElement("label");
-  columnsLabel.className = "block text-xs font-semibold mb-1";
-  columnsLabel.textContent = "Colunas";
-
-  const columnsContainer = document.createElement("div");
-  columnsContainer.className = "space-y-2 max-h-40 overflow-auto";
-
-  function renderColumns() {
-    columnsContainer.innerHTML = "";
-    sheet.columns.forEach((col, idx) => {
-      const colDiv = document.createElement("div");
-      colDiv.className = "flex items-center space-x-2";
-
-      const colNameInput = document.createElement("input");
-      colNameInput.type = "text";
-      colNameInput.value = col.name;
-      colNameInput.className = "flex-1 bg-[#2f4a11] border border-[#2f80ed] rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]";
-      colNameInput.addEventListener("input", (e) => {
-        sheet.columns[idx].name = e.target.value;
-        renderBoardContent();
-      });
-
-      const colTypeSelect = document.createElement("select");
-      colTypeSelect.className = "bg-[#2f4a11] border border-[#2f80ed] rounded px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]";
-      const types = ["Texto", "Número", "Moeda (R$)", "Data", "Hora", "Tempo/Duração", "Porcentagem", "Checkbox", "Peso (kg)", "Outro"];
-      types.forEach(t => {
-        const option = document.createElement("option");
-        option.value = t.toLowerCase();
-        option.textContent = t;
-        if (col.type === t.toLowerCase()) option.selected = true;
-        colTypeSelect.appendChild(option);
-      });
-      colTypeSelect.addEventListener("change", (e) => {
-        sheet.columns[idx].type = e.target.value;
-      });
-
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "text-red-600 hover:text-red-800 text-sm px-1 rounded";
-      delBtn.title = "Remover coluna";
-      delBtn.innerHTML = '<i class="fas fa-times"></i>';
-      delBtn.addEventListener("click", () => {
-        sheet.columns.splice(idx, 1);
-        sheet.data.forEach(row => {
-          row.splice(idx, 1);
-        });
-        renderColumns();
-        renderBoardContent();
-      });
-
-      colDiv.appendChild(colNameInput);
-      colDiv.appendChild(colTypeSelect);
-      colDiv.appendChild(delBtn);
-      columnsContainer.appendChild(colDiv);
-    });
-  }
-  renderColumns();
-
-  const addColumnBtn = document.createElement("button");
-  addColumnBtn.type = "button";
-  addColumnBtn.className = "mt-1 bg-[#6b7280]/40 hover:bg-[#6b7280]/60 rounded px-2 py-1 text-xs font-semibold flex items-center space-x-1";
-  addColumnBtn.innerHTML = `<i class="fas fa-plus"></i><span>Adicionar coluna</span>`;
-  addColumnBtn.addEventListener("click", () => {
-    sheet.columns.push({ name: `Coluna ${sheet.columns.length + 1}`, type: "text" });
-    sheet.data.forEach(row => {
-      row.push("");
-    });
-    renderColumns();
-    renderBoardContent();
-  });
-
-  // Gerenciamento de linhas
-  const rowsLabel = document.createElement("label");
-  rowsLabel.className = "block text-xs font-semibold mb-1";
-  rowsLabel.textContent = "Linhas";
-
-  const rowsContainer = document.createElement("div");
-  rowsContainer.className = "space-y-2 max-h-40 overflow-auto";
-
-  function renderRows() {
-    rowsContainer.innerHTML = "";
-    sheet.data.forEach((row, idx) => {
-      const rowDiv = document.createElement("div");
-      rowDiv.className = "flex items-center space-x-2";
-
-      const rowLabel = document.createElement("span");
-      rowLabel.className = "text-white text-sm select-none w-6";
-      rowLabel.textContent = idx + 1;
-
-      const delBtn = document.createElement("button");
-      delBtn.type = "button";
-      delBtn.className = "text-red-600 hover:text-red-800 text-sm px-1 rounded";
-      delBtn.title = "Remover linha";
-      delBtn.innerHTML = '<i class="fas fa-times"></i>';
-      delBtn.addEventListener("click", () => {
-        sheet.data.splice(idx, 1);
-        renderRows();
-        renderBoardContent();
-      });
-
-      rowDiv.appendChild(rowLabel);
-      rowDiv.appendChild(delBtn);
-      rowsContainer.appendChild(rowDiv);
-    });
-  }
-  renderRows();
-
-  const addRowBtn = document.createElement("button");
-  addRowBtn.type = "button";
-  addRowBtn.className = "mt-1 bg-[#6b7280]/40 hover:bg-[#6b7280]/60 rounded px-2 py-1 text-xs font-semibold flex items-center space-x-1";
-  addRowBtn.innerHTML = `<i class="fas fa-plus"></i><span>Adicionar linha</span>`;
-  addRowBtn.addEventListener("click", () => {
-    const newRow = sheet.columns.map(() => "");
-    sheet.data.push(newRow);
-    renderRows();
-    renderBoardContent();
-  });
-
-  container.appendChild(nameLabel);
-  container.appendChild(nameInput);
-  container.appendChild(columnsLabel);
-  container.appendChild(columnsContainer);
-  container.appendChild(addColumnBtn);
-  container.appendChild(rowsLabel);
-  container.appendChild(rowsContainer);
-  container.appendChild(addRowBtn);
 
   modalContent.appendChild(container);
 }
@@ -821,110 +1025,23 @@ function renderBoardContent() {
   boardContent.appendChild(addBlockBtn);
 }
 
-// Função para inicializar dados de exemplo
+// Função para inicializar os dados
 function initExampleData() {
-  boards = [
-    {
-      id: generateId(),
-      name: "SAÚDE",
-      blocks: [
-        {
-          id: generateId(),
-          name: "Saúde",
-          items: [
-            {
-              id: generateId(),
-              type: "sheet",
-              name: "Peso e Treino",
-              columns: [
-                { name: "Data", type: "date" },
-                { name: "Peso (kg)", type: "peso (kg)" },
-                { name: "Treino feito (☑️)", type: "checkbox" },
-              ],
-              data: [
-                ["2024-06-01", "70", "true"],
-                ["2024-06-02", "69.5", "false"],
-              ],
-              archived: false,
-            },
-          ],
-          archived: false,
-        },
-      ],
-    },
-    {
-      id: generateId(),
-      name: "DINHEIRO",
-      blocks: [
-        {
-          id: generateId(),
-          name: "Dinheiro",
-          items: [
-            {
-              id: generateId(),
-              type: "sheet",
-              name: "Gastos",
-              columns: [
-                { name: "Data", type: "date" },
-                { name: "Descrição", type: "text" },
-                { name: "Valor (R$)", type: "moeda (r$)" },
-              ],
-              data: [
-                ["2024-06-01", "Supermercado", "150.00"],
-                ["2024-06-02", "Transporte", "20.00"],
-              ],
-              archived: false,
-            },
-          ],
-          archived: false,
-        },
-      ],
-    },
-    {
-      id: generateId(),
-      name: "ESPIRITUAL",
-      blocks: [
-        {
-          id: generateId(),
-          name: "Espiritual",
-          items: [
-            {
-              id: generateId(),
-              type: "card",
-              title: "Checklist de oração",
-              description: "Oração, leitura bíblica, jejum",
-              checklist: [
-                { text: "Oração", checked: false },
-                { text: "Leitura bíblica", checked: false },
-                { text: "Jejum", checked: false },
-              ],
-              archived: false,
-            },
-          ],
-          archived: false,
-        },
-      ],
-    },
-  ];
-  selectedBoardId = boards[0].id;
-  renderBoardsList();
-  renderBoardContent();
+  boards = [];
+  selectedBoardId = null;
 }
 
 // Event listeners principais
 addBoardBtn.addEventListener("click", () => {
-  const boardName = prompt("Digite o nome do novo quadro:");
-  if (boardName && boardName.trim()) {
-    const newBoard = {
-      id: generateId(),
-      name: boardName.trim(),
-      blocks: [],
-    };
-    boards.push(newBoard);
-    selectedBoardId = newBoard.id;
-    renderBoardsList();
-    renderBoardContent();
-  }
+  const newBoard = {
+    id: generateId(),
+    name: "Novo Quadro",
+    blocks: [],
+  };
+  boards.push(newBoard);
+  selectedBoardId = newBoard.id;
+  renderBoardsList();
+  renderBoardContent();
 });
 
 // Botão de configurações
@@ -956,17 +1073,14 @@ sidebarToggleBtn.addEventListener("click", () => {
 
 // Funções para manipulação de blocos
 function addNewBlock(board) {
-  const blockName = prompt("Digite o nome do novo bloco:");
-  if (blockName && blockName.trim()) {
-    const newBlock = {
-      id: generateId(),
-      name: blockName.trim(),
-      items: [],
-      archived: false,
-    };
-    board.blocks.push(newBlock);
-    renderBoardContent();
-  }
+  const newBlock = {
+    id: generateId(),
+    name: "Novo Bloco",
+    items: [],
+    archived: false,
+  };
+  board.blocks.push(newBlock);
+  renderBoardContent();
 }
 
 // Função para fechar o modal
@@ -982,40 +1096,38 @@ function closeModal() {
 
 // Funções para gerenciar blocos, cartões e planilhas
 function addNewSheetToBlock(block) {
-  const sheetName = prompt("Digite o nome da planilha:");
-  if (!sheetName || sheetName.trim() === "") return;
-  
   const newSheet = {
     id: generateId(),
     type: "sheet",
-    name: sheetName.trim(),
+    name: "Nova Planilha",
     columns: [
-      { name: "Coluna 1", type: "text" },
-      { name: "Coluna 2", type: "text" },
-      { name: "Coluna 3", type: "text" },
+      { name: "Data", type: "date" },
+      { name: "Descrição", type: "texto" },
+      { name: "Status", type: "checkbox" }
     ],
     data: [
-      ["", "", ""],
-      ["", "", ""],
-      ["", "", ""],
+      ["", "", false],
+      ["", "", false],
+      ["", "", false]
     ],
     archived: false,
   };
   block.items.push(newSheet);
   renderBoardContent();
+  // Abre o modal avançado para edição imediata
+  const selectedBoard = boards.find(b => b.blocks.includes(block));
+  openModalPlanilhaAvancada(newSheet, block, selectedBoard);
 }
 
 function addNewCardToBlock(block) {
-  const cardTitle = prompt("Digite o título do cartão simples:");
-  if (!cardTitle || cardTitle.trim() === "") return;
-  
   const newCard = {
     id: generateId(),
     type: "card",
-    title: cardTitle.trim(),
+    title: "Novo Cartão Simples",
     description: "",
     checklist: [],
     archived: false,
+    isNew: true // Flag para indicar que é um cartão novo
   };
   block.items.push(newCard);
   renderBoardContent();

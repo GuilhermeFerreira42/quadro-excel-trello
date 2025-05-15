@@ -274,6 +274,71 @@
     </div>
   </div>
 
+  <!-- Modal de Edição Avançada de Planilha -->
+  <div id="modalPlanilhaEdicaoAvancada" class="hidden fixed inset-0 flex items-center justify-center modal-bg z-50" role="dialog" aria-modal="true" aria-labelledby="modalPlanilhaAvancadaTitle">
+    <div class="bg-[#1b1c21] rounded-md max-w-4xl w-full max-h-[90vh] overflow-auto p-6 relative">
+      <header class="flex justify-between items-center mb-4">
+        <h2 id="modalPlanilhaAvancadaTitle" class="text-white font-semibold text-lg select-none">Editar Planilha</h2>
+        <div class="flex items-center space-x-2">
+          <button id="btnCloseModalPlanilhaAvancada" class="text-white hover:text-red-600" title="Fechar" type="button" aria-label="Fechar modal de edição de planilha">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </header>      <form id="formPlanilhaAvancada">
+        <div class="mb-4">
+          <label for="nomePlanilhaAvancada" class="block text-xs font-semibold mb-1">Nome da Planilha</label>
+          <input 
+            type="text" 
+            id="nomePlanilhaAvancada" 
+            class="w-full rounded bg-[#2f4a11] border border-[#2f80ed] px-2 py-1 text-white text-sm focus:outline-none focus:ring-1 focus:ring-[#2f80ed]"
+            required
+          >
+        </div>
+        <div class="table-wrapper sheet-table-wrapper mt-2 mb-4 max-h-[50vh] overflow-auto">
+          <table id="tabelaPlanilhaAvancada" class="sheet-table">
+            <thead id="theadColunasAvancada">
+              <!-- Colunas geradas dinamicamente -->
+            </thead>
+            <tbody id="tbodyLinhasAvancada">
+              <!-- Linhas geradas dinamicamente -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 mb-4 flex flex-wrap justify-start items-center gap-3">
+          <button type="button" id="btnAdicionarColunaPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] text-white text-xs font-semibold rounded px-3 py-1.5">
+            <i class="fas fa-plus mr-1"></i>
+            Adicionar Coluna
+          </button>
+          <button type="button" id="btnAdicionarLinhaPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] text-white text-xs font-semibold rounded px-3 py-1.5">
+            <i class="fas fa-plus mr-1"></i>
+            Adicionar Linha
+          </button>
+          <button type="button" id="btnRemoverLinhasSelecionadasPlanilhaAvancada" class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded px-3 py-1.5" disabled>
+            <i class="fas fa-trash-alt mr-1"></i>
+            Remover Linhas Selecionadas
+          </button>
+        </div>
+
+        <footer class="mt-6 flex justify-end items-center space-x-3">
+          <button type="button" id="btnExcluirPlanilhaAvancada" class="bg-red-600 hover:bg-red-700 px-3 py-1.5 rounded text-xs font-semibold">
+            🗑️ Excluir Planilha
+          </button>
+          <button type="button" id="btnArquivarPlanilhaAvancada" class="bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded text-xs font-semibold">
+            📦 Arquivar Planilha
+          </button>
+          <div class="flex-grow"></div>
+          <button type="button" id="btnCancelarPlanilhaAvancada" class="bg-gray-600 hover:bg-gray-700 px-3 py-1.5 rounded text-xs font-semibold">
+            Cancelar
+          </button>
+          <button type="submit" id="btnSalvarPlanilhaAvancada" class="bg-[#2f80ed] hover:bg-[#1c5ed6] px-3 py-1.5 rounded text-xs font-semibold">
+            Salvar Alterações
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
 </html>
